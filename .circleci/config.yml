@@ -7,6 +7,8 @@ jobs:
       - run: |
           echo $GCP_SERVICE_ACCOUNT_KEY | gcloud auth activate-service-account --key-file=-
           gcloud auth list
+          gcloud auth configure-docker europe-west1-docker.pkg.dev
+          docker pull nginx:latest
 
 workflows:
   test_my_app:
