@@ -1,64 +1,15 @@
-# Couldn't automatically generate a config from your source code.
-# This is a generic template to serve as a base for your custom config
-# See: https://circleci.com/docs/configuration-reference
 version: 2.1
-steps:
-  - checkout
-  - run:
-      name: Authenticate gcloud CLI
-      command: |
-        echo $GCP_SERVICE_KEY | gcloud auth activate-service-account --key-file=-
-        gcloud --quiet config set project ${<<parameters.gcp-project-id>>}
-        # check to see if cluster parameters are defined
-        if [ ! -z ${<<parameters.gke-cluster-name>>} ]; then
-          if [ $(gcloud container clusters list --format=json | jq ".[] | \
-          select(.name == \"$<<parameters.gke-cluster-name>>\") | .locations | length") -gt 1 ];
-          then
-              gcloud --quiet config set \
-              compute/region ${<<parameters.gke-cluster-compute-region>>}
-          else
-              gcloud --quiet config set \
-              compute/zone ${<<parameters.gke-cluster-compute-zone>>}
-          fi
-        fi
-        gcloud auth configure-docker europe-docker.pkg.dev
-  - setup_remote_docker
-  - run:
-      name: Set build variables from build.json
-      command: |
-        SERVICE_NAME=$(jq -r '.name' build.json)
-        VERSION=$(jq -r '.version' build.json)
-        DOCKER_TAG=$VERSION
-        if [ "${<< parameters.docker-image-suffix >>}" != "" ]; then
-            DOCKER_TAG=$DOCKER_TAG-${<< parameters.docker-image-suffix >>} >> $BASH_ENV
-        fi
-        if [ "$CIRCLE_BRANCH" = "develop" ] && [[ ! $VERSION == *"-develop" ]]; then
-            DOCKER_TAG=$DOCKER_TAG-develop >> $BASH_ENV
-        fi
-        echo "Service name is $SERVICE_NAME, node package version is" \
-          "$VERSION and docker tag will be $DOCKER_TAG"
-        TAG_COUNT=$(gcloud container images list-tags \
-        ${<<parameters.gcp-container-registry-url>>}\/${SERVICE_NAME} \
-        --filter="tags=${DOCKER_TAG}" --format=json --quiet | jq ". | length")
-        echo GCR image tag Count is $TAG_COUNT
-        if [ $TAG_COUNT != 0 ]; then
-            echo "ERROR: image tag exists.  Found total of $TAG_COUNT image " \
-            "tags at: $<<parameters.gcp-container-registry-url>>" \
-            "/$SERVICE_NAME:$DOCKER_TAG"
-            exit 1
-        fi
-        # Debug: Print Docker Tag and Image URL
-        echo "Docker Tag: $DOCKER_TAG"
-        echo "Image URL: $<<parameters.gcp-container-registry-url>>/$SERVICE_NAME/$SERVICE_NAME:$DOCKER_TAG"
-        # tag with generated unique tag and update latest
-        docker build --build-arg NPM_TOKEN=${<<parameters.npm-token-var>>} -t \
-        $<<parameters.gcp-container-registry-url>>/$SERVICE_NAME/$SERVICE_NAME:$DOCKER_TAG \
-        -t $<<parameters.gcp-container-registry-url>>/$SERVICE_NAME/$SERVICE_NAME:latest \
-        <<parameters.path-to-dockerfile>>
-        # push all tags
-        echo "Pushing Docker image: $<<parameters.gcp-container-registry-url>>/$SERVICE_NAME/$SERVICE_NAME:$DOCKER_TAG"
-        docker push \
-        $<<parameters.gcp-container-registry-url>>/$SERVICE_NAME/$SERVICE_NAME:$DOCKER_TAG
-        echo "Pushing latest Docker image: $<<parameters.gcp-container-registry-url>>/$SERVICE_NAME/$SERVICE_NAME:latest"
-        docker push \
-        $<<parameters.gcp-container-registry-url>>/$SERVICE_NAME/$SERVICE_NAME:latest
+
+jobs:
+  build_and_test: # this can be any name you choose
+    executor: python/default
+    steps:
+      - checkout
+      - run:
+          name: Run tests
+          command: echo "hello world"
+
+workflows:
+  test_my_app:
+    jobs:
+      - build_and_test
