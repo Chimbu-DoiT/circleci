@@ -13,6 +13,7 @@ jobs:
       - setup_remote_docker
       - run: |
           docker build -t europe-docker.pkg.dev/chimbuc-playground/nginx/nginx:latest .
+          docker images
           docker push europe-docker.pkg.dev/chimbuc-playground/nginx/nginx:latest
 
 workflows:
