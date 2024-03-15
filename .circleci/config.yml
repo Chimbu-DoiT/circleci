@@ -5,14 +5,14 @@ jobs:
     docker:
       - image: google/cloud-sdk
     steps:
+      - checkout
       - run: |
           echo $GCP_SERVICE_ACCOUNT_KEY | gcloud auth activate-service-account --key-file=-
           gcloud auth list
           gcloud auth configure-docker europe-docker.pkg.dev
       - setup_remote_docker
       - run: |
-          docker pull nginx:latest
-          docker tag nginx:latest europe-docker.pkg.dev/chimbuc-playground/nginx/nginx:latest
+          docker build -t europe-docker.pkg.dev/chimbuc-playground/nginx/nginx:latest .
           docker push europe-docker.pkg.dev/chimbuc-playground/nginx/nginx:latest
 
 workflows:
