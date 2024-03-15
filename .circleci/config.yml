@@ -12,8 +12,8 @@ jobs:
       - setup_remote_docker
       - run: |
           docker pull nginx:latest
-          docker tag nginx:latest europe-docker.pkg.dev/chimbuc-playground/nginx:latest
-          docker push europe-docker.pkg.dev/chimbuc-playground/nginx:latest
+          docker tag nginx:latest europe-docker.pkg.dev/chimbuc-playground/nginx/nginx:latest
+          docker push europe-docker.pkg.dev/chimbuc-playground/nginx/nginx:latest
 
 workflows:
   build_and_push_image:
