@@ -1,11 +1,5 @@
 version: 2.1
 
-parameters:
-  gcp-container-registry-url:
-    description: The base path to our container image registry URL
-    type: string
-    default: "europe-docker.pkg.dev/chimbuc-playground"
-
 jobs:
   build:
     docker:
@@ -18,8 +12,8 @@ jobs:
       - setup_remote_docker
       - run: |
           docker pull nginx:latest
-          docket tag nginx:latest <<parameters.gcp-container-registry-url>>/docker/nginx:latest
-          docker push <<parameters.gcp-container-registry-url>>/docker/nginx:latest
+          docket tag nginx:latest europe-west1-docker.pkg.dev/chimbuc-playground/docker/nginx:latest
+          docker push europe-west1-docker.pkg.dev/chimbuc-playground/docker/nginx:latest
 
 workflows:
   build_and_push_image:
